@@ -1,0 +1,58 @@
+.pdf-page-hightlight-annotation-container {
+    position: absolute;
+    pointer-events: none;
+    background-color: rgba(249, 249, 79, 0.672);
+    z-index: 2;
+    cursor: pointer;
+    pointer-events: auto; /* Enable pointer events */
+}
+
+.pdf-page-hightlight-annotation-container:hover {
+    background-color: #ffb3026f;
+}
+
+.pdf-page-highlight-clip-path-outline {
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.pdf-page-highlight-toolbar-container {
+    position: absolute;
+    z-index: 3;
+    background-color: #2a232f;
+    border-radius: 2px;
+    display: flex;
+    gap: 5px;
+    padding: 3px 3px;
+}
+
+.pdf-page-highlight-toolbar-button {
+    width: 20px;
+    height: 20px;
+    background-color: transparent;
+    border-radius: 2px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pdf-page-highlight-toolbar-button:hover {
+    cursor: pointer;
+    background-color: #89888b;
+}
+
+.pdf-page-highlight-toolbar-color-change-button {
+    border-radius: 50%;
+    border-style: solid;
+    border-width: 2px;
+}
+
+.highlight-is-selected {
+    background-color: #ffb3026f;
+}
+
+.highlight-selected-pallete-color {
+    border-color: brown;
+}

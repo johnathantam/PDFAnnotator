@@ -1,0 +1,60 @@
+/* Styles regarding the comments of the pdf pages */
+
+.pdf-page-comment-container {
+    width: 100%;
+    /* border-radius: 5px; */
+    background-color: rgb(241, 255, 255);
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 8px;
+    padding: 2% 0;
+}
+
+.pdf-page-comment-header-container {
+    width: 100%;
+    display: flex;
+}
+
+.pdf-page-comment-header-icon {
+    width: 25px;
+    height: 25px;
+    background-color: rgb(68, 180, 255);
+    border-radius: 50%;
+    border: solid;
+    border-width: 1px;
+    margin-left: 3%;
+    cursor: pointer;
+}
+
+.pdf-page-comment-header-icon:hover {
+    background-image: url("/Components/PDFViewer/editor-toolbar-delete.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 16px;
+}
+
+.pdf-page-comment-header-title {
+    width: 80%;
+    margin-left: 2%;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+}
+
+.pdf-page-comment-textarea {
+    margin-left: calc(4% + 25px);
+    margin-top: 10px;
+    padding: 1% 1%;
+    width: 80%;
+    box-sizing: border-box;
+    border-style: solid;
+    resize: none;
+    height: 24px;
+    overflow-y: hidden;
+}
+
+.pdf-page-comment-textarea:focus {
+    border-style: none none solid none;
+    outline-style: solid;
+    outline-width: 1px;
+}

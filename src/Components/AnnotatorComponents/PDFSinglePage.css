@@ -1,0 +1,60 @@
+/* CSS Regarding individual page previews*/
+
+.pdf-view-page-container {
+    width: 100%;
+    margin-top: 2%;
+    display: flex;
+}
+
+.pdf-page-container {
+    width: 816px; /* Change to variable later */
+    height: 1056px;
+    position: relative;
+    margin-left: calc((100% - 816px) / 2);
+    background-color: rgba(0, 0, 0, 0.423);
+    flex-shrink: 0;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+.pdf-page-drawing-canvas {
+    width: 816px;
+    height: 1056px;
+}
+
+.pdf-page-annotations-layer {
+    width: 816px;
+    height: 1056px; 
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+}
+
+.pdf-page-textlayer {
+    width: 816px;
+    height: 1056px;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+}
+
+.pdf-page-text-width-preview {
+    top: 0;
+    left: 0;
+    height: 0;
+    white-space: nowrap;
+    position: absolute;
+    visibility: hidden;
+}
+
+.pdf-page-comments-container {
+    margin-left: 1%;
+    width: 250px;
+    height: 1056px;
+    background-color: transparent;
+    flex-shrink: 0;
+    overflow-y: auto;
+}
