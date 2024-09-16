@@ -152,7 +152,7 @@ class AnnotatorHeader extends React.Component<object, AnnotatorHeaderState> {
                     <input type="file" accept="application/pdf application/bin" style={{ display: 'none' }} id={"upload-pdf-input"} onChange={this.importPDF.bind(this)}/>
                     <label htmlFor="upload-pdf-input" className="rightview-item-button">
                         <div className="rightview-port-action-icon">
-                            <img src={"/Components/Header/toolbarButton-upload.svg"}></img>
+                            <img src={"https://johnathantam.github.io/PDFAnnotator/Components/Header/toolbarButton-upload.svg"}></img>
                         </div>
                         <p className="rightview-port-action-icon-description">Upload PDF</p>
                     </label>
