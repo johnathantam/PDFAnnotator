@@ -162,6 +162,8 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
     private async initialzeViewer(): Promise<void> {
         await this.renderPDF();
 
+        console.log("Building from the viewer!", this.state.pdfDocument)
+
         // Turn on progressive loading
         this.pdfViewerContainer.current?.addEventListener("scroll", this.progressiveLoadOnScroll.bind(this));
 
