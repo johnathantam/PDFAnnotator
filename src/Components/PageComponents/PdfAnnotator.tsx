@@ -127,7 +127,7 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
                 disableStream: true,
             });
         } else {
-            const defaultData: ArrayBuffer = await fetch("/test/unte.pdf").then(res => res.arrayBuffer());
+            const defaultData: ArrayBuffer = await fetch("./test/unte.pdf").then(res => res.arrayBuffer());
             // Load fallback / default pdf if no custom pdf data was given
             loadingTask = PDFJS.getDocument({
                 data: defaultData.slice(0),
