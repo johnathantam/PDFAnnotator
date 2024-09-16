@@ -112,7 +112,7 @@ class AnnotatorHeader extends React.Component<object, AnnotatorHeaderState> {
             <header className="annotator-header">
                 <div className="start">
                     <button className="header-left-sidebar-toggle-button" title="Sidebar" onClick={() => this.pageSidebar?.toggleSidebar()}>
-                        <img src={"/Components/Header/sidebarToggle.svg"}></img>
+                        <img src={"https://johnathantam.github.io/PDFAnnotator/Components/Header/sidebarToggle.svg"}></img>
                     </button>
                     <h1 className="header-left-page-title">PDF -{'>'} A n n o t a t o r</h1>
                 </div>
@@ -125,18 +125,18 @@ class AnnotatorHeader extends React.Component<object, AnnotatorHeaderState> {
                     <span className="center-controls-seperator"></span>
                     <div className="center-zoom-controls-container">
                         <button className="center-zoom-control-button" title="Zoom In" onClick={() => this.pagePDFViewer?.zoom(0.05)}>
-                            <img src={"/Components/Header/toolbarButton-zoomIn.svg"}></img>
+                            <img src={"https://johnathantam.github.io/PDFAnnotator/Components/Header/toolbarButton-zoomIn.svg"}></img>
                         </button>
                         <span>/</span>
                         <button className="center-zoom-control-button" title="Zoom Out" onClick={() => this.pagePDFViewer?.zoom(-0.05)}>
-                            <img src={"/Components/Header/toolbarButton-zoomOut.svg"}></img>
+                            <img src={"https://johnathantam.github.io/PDFAnnotator/Components/Header/toolbarButton-zoomOut.svg"}></img>
                         </button>
                     </div>
                 </div>
                 <div className="end">
                     <button className="rightview-item-button" onClick={() => { this.pagePDFViewer?.savePDF(); this.pagePDFViewer?.savePDFAsEditable() }}>
                         <div className="rightview-port-action-icon">
-                            <img src={"/Components/Header/toolbarButton-openFile.svg"}></img>
+                            <img src={"https://johnathantam.github.io/PDFAnnotator/Components/Header/toolbarButton-openFile.svg"}></img>
                         </div>
                         <p className="rightview-port-action-icon-description">Export</p>
                     </button>
@@ -144,7 +144,7 @@ class AnnotatorHeader extends React.Component<object, AnnotatorHeaderState> {
                     <input type="file" accept="application/pdf application/bin" style={{ display: 'none' }} id={"upload-pdf-editable-input"} onChange={this.importPDFBin.bind(this)}/>
                     <label htmlFor="upload-pdf-editable-input" className="rightview-item-button">
                         <div className="rightview-port-action-icon">
-                            <img src={"/Components/Header/toolbarButton-uploadBin.svg"}></img>
+                            <img src={"https://johnathantam.github.io/PDFAnnotator/Components/Header/toolbarButton-uploadBin.svg"}></img>
                         </div>
                         <p className="rightview-port-action-icon-description">Upload .bin</p>
                     </label>

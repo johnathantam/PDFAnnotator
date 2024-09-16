@@ -250,7 +250,7 @@ class AnnotatorSidebar extends React.Component<AnnotatorSidebarProps, AnnotatorS
         } else {
             // Load backup / default pdf
             loadingTask = PDFJS.getDocument({
-                data: await fetch("/test/unte.pdf").then(res => res.arrayBuffer()),
+                data: await fetch("https://johnathantam.github.io/PDFAnnotator/test/unte.pdf").then(res => res.arrayBuffer()),
                 enableXfa: true,
                 disableAutoFetch: true,
                 disableStream: true,
@@ -343,10 +343,10 @@ class AnnotatorSidebar extends React.Component<AnnotatorSidebarProps, AnnotatorS
                 <section className="sidebar-content-container">
                     <div className="sidebar-tools-container">
                         <button className="sidebar-tool-button" title="Pages" onClick={() => this.toggleSidebarMode("pagePreview")}>
-                            <img src={"/Components/PagePreview/toolbarButton-viewLayers.svg"}></img>
+                            <img src={"https://johnathantam.github.io/PDFAnnotator/Components/PagePreview/toolbarButton-viewLayers.svg"}></img>
                         </button>
                         <button className="sidebar-tool-button" title="Outline" onClick={() => this.toggleSidebarMode("outlinePreview")}>
-                            <img src={"/Components/PagePreview/toolbarButton-viewOutline.svg"}></img>
+                            <img src={"https://johnathantam.github.io/PDFAnnotator/Components/PagePreview/toolbarButton-viewOutline.svg"}></img>
                         </button>
                     </div>
                     <div className="sidebar-page-preview-container" ref={this.pdfPreviewsContainer} style={{ display: `${this.state.previewMode === "pagePreview" ? "block" : "none"}` }}>

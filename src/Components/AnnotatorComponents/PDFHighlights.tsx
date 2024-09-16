@@ -200,7 +200,7 @@ abstract class HighlightAnnotation<P extends PDFPageHighlightAnnotationProps | I
                 <button style={{ backgroundColor: "rgba(168, 255, 28, 1)" }} className="pdf-page-highlight-toolbar-button pdf-page-highlight-toolbar-color-change-button" ref={this.highlightAnnotationToolbarColorChoiceButtons.greenChoice} onClick={() => { this.changeHighlightColor("rgba(168, 255, 28, 0.548)", this.highlightAnnotationToolbarColorChoiceButtons.greenChoice) }}></button>
                 <button style={{ backgroundColor: "rgba(107, 28, 255, 1)" }} className="pdf-page-highlight-toolbar-button pdf-page-highlight-toolbar-color-change-button" ref={this.highlightAnnotationToolbarColorChoiceButtons.purpleChoice} onClick={() => { this.changeHighlightColor("rgba(107, 28, 255, 0.548)", this.highlightAnnotationToolbarColorChoiceButtons.purpleChoice) }}></button>
                 <button className="pdf-page-highlight-toolbar-button" onClick={() => this.props.onRemove(this.props.identifier)}>
-                    <img src="/Components/PDFViewer/editor-toolbar-delete.svg" alt="delete" />
+                    <img src="https://johnathantam.github.io/PDFAnnotator/Components/PDFViewer/editor-toolbar-delete.svg" alt="delete" />
                 </button>
             </div>
         </>

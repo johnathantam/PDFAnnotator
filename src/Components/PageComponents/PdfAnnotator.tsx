@@ -127,7 +127,7 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
                 disableStream: true,
             });
         } else {
-            const defaultData: ArrayBuffer = await fetch("./test/unte.pdf").then(res => res.arrayBuffer());
+            const defaultData: ArrayBuffer = await fetch("https://johnathantam.github.io/PDFAnnotator/test/unte.pdf").then(res => res.arrayBuffer());
             // Load fallback / default pdf if no custom pdf data was given
             loadingTask = PDFJS.getDocument({
                 data: defaultData.slice(0),
@@ -672,10 +672,10 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
                 </div>
                 <div className="pdf-editor-toolbar-container">
                     <button className="pdf-toolbar-item" title="Highlight" onClick={this.toggleHighlightMode.bind(this)} ref={this.pdfViewerToolbarHighlightButton}>
-                        <img src={"/Components/PDFViewer/toolbarButton-editorHighlight.svg"}></img>
+                        <img src={"https://johnathantam.github.io/PDFAnnotator/Components/PDFViewer/toolbarButton-editorHighlight.svg"}></img>
                     </button>
                     <button className="pdf-toolbar-item" title="Comment" onClick={this.toggleCommentMode.bind(this)} ref={this.pdfViewerToolbarCommentButton}>
-                        <img src={"/Components/PDFViewer/toolbarButton-comment.svg"}></img>
+                        <img src={"https://johnathantam.github.io/PDFAnnotator/Components/PDFViewer/toolbarButton-comment.svg"}></img>
                     </button>
                     <div className="pdf-toolbar-pallete-container">
                         <div style={{ backgroundColor: "rgba(215, 255, 39, 1)" }} className="pdf-toolbar-pallete-color selected-pallete-color" ref={this.pdfViewerToolbarColorChoiceButtons.yellowChoice} onClick={() => this.changeAnnotationColor("rgba(215, 255, 39, 0.548)", this.pdfViewerToolbarColorChoiceButtons.yellowChoice)}></div>
