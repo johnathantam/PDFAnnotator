@@ -22,7 +22,7 @@ class AnnotatorHeader extends React.Component<object, AnnotatorHeaderState> {
 
         this.state = {
             currentPageValue: 1,
-            totalPageNumber: 162,
+            totalPageNumber: 10,
         }
     }
 
