@@ -127,7 +127,7 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
                 disableStream: true,
             });
         } else {
-            const defaultData: ArrayBuffer = await fetch("https://johnathantam.github.io/PDFAnnotator/test/unte.pdf").then(res => res.arrayBuffer());
+            const defaultData: ArrayBuffer = await fetch("https://johnathantam.github.io/PDFAnnotator/test/untetheredPreview.pdf").then(res => res.arrayBuffer());
             // Load fallback / default pdf if no custom pdf data was given
             loadingTask = PDFJS.getDocument({
                 data: defaultData.slice(0),
@@ -161,8 +161,6 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
 
     private async initialzeViewer(): Promise<void> {
         await this.renderPDF();
-
-        console.log("Building from the viewer!", this.state.pdfDocument)
 
         // Turn on progressive loading
         this.pdfViewerContainer.current?.addEventListener("scroll", this.progressiveLoadOnScroll.bind(this));

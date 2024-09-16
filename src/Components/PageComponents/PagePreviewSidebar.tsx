@@ -250,7 +250,7 @@ class AnnotatorSidebar extends React.Component<AnnotatorSidebarProps, AnnotatorS
         } else {
             // Load backup / default pdf
             loadingTask = PDFJS.getDocument({
-                data: await fetch("https://johnathantam.github.io/PDFAnnotator/test/unte.pdf").then(res => res.arrayBuffer()),
+                data: await fetch("https://johnathantam.github.io/PDFAnnotator/test/untetheredPreview.pdf").then(res => res.arrayBuffer()),
                 enableXfa: true,
                 disableAutoFetch: true,
                 disableStream: true,
