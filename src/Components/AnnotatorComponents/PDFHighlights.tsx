@@ -44,11 +44,11 @@ abstract class HighlightAnnotation<P extends PDFPageHighlightAnnotationProps | I
 
         this.highlightAnnotationContainer = React.createRef<HTMLDivElement>();
         this.highlightAnnotationToolbarColorChoiceButtons = {
-        yellowChoice: React.createRef<HTMLButtonElement>(),
-        purpleChoice: React.createRef<HTMLButtonElement>(),
-        greenChoice: React.createRef<HTMLButtonElement>(),
-        redChoice: React.createRef<HTMLButtonElement>(),
-        blueChoice: React.createRef<HTMLButtonElement>(),
+            yellowChoice: React.createRef<HTMLButtonElement>(),
+            purpleChoice: React.createRef<HTMLButtonElement>(),
+            greenChoice: React.createRef<HTMLButtonElement>(),
+            redChoice: React.createRef<HTMLButtonElement>(),
+            blueChoice: React.createRef<HTMLButtonElement>(),
         };
 
         this.state = {

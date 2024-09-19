@@ -359,13 +359,13 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
 
         // Loop through all rendered pages to check for annotations
         for (let i = 0; i < this.state.pdfPageObjects.length; i++) {
-            // First check for comments
+            // Check for comments
             const pdfComments = this.state.pdfPageObjects[i].current?.state.commentSectionElementRefs;
 
-            if (pdfComments == undefined || pdfComments.length == 0) {
+            if (pdfComments == undefined) {
                 continue;
             }
-
+            
             // Now sort the comments into columns based on overflow (sometimes there are too many comments, so we expand horizontally!)
             const horizontalPadding: number = 10; // The actuall padding is 5 px between each! Its just divided by 2
             const verticalPadding: number = 10;
@@ -391,72 +391,75 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
 
             // Now that we have all the columns, LETS START adding the comments to the page!
             const page = pdfDoc.getPage(i);
-            page.setSize(page.getWidth() + columns.length * (250 + horizontalPadding), heightLimit + verticalPadding);
 
-            // Draw comments onto pdf
-            let startX = page.getWidth() - (columns.length * (250 + horizontalPadding));
-            for (let col = 0; col < columns.length; col++) {
-                let startY = page.getHeight(); // Start from the top of the page
+            if (pdfComments.length > 0) {
+                page.setSize(page.getWidth() + columns.length * (250 + horizontalPadding), heightLimit + verticalPadding);
 
-                columns[col].forEach(commentRef => {
-                    if (commentRef.current == undefined) {
-                        return;
-                    }
+                // Draw comments onto pdf
+                let startX = page.getWidth() - (columns.length * (250 + horizontalPadding));
+                for (let col = 0; col < columns.length; col++) {
+                    let startY = page.getHeight(); // Start from the top of the page
 
-                    const height = commentRef.current.state.height;
-                    const width = 250;
-                    
-                    const commentColors: number[] = commentRef.current.state.matchingColor.match(/\d+(\.\d+)?/g)?.map(Number) as number[]; // grab numbers from rgba string in order
-                    const commentColor = PDFLib.rgb(commentColors[0] / 255, commentColors[1] / 255, commentColors[2] / 255); 
-                    
-                    const commentIconRadius: number = 5;
+                    columns[col].forEach(commentRef => {
+                        if (commentRef.current == undefined) {
+                            return;
+                        }
 
-                    // Draw a rectangle for the comment box
-                    page.drawRectangle({
-                        x: startX + (horizontalPadding / 2), // A little padding from the left of the column
-                        y: startY - height - (verticalPadding / 2), // Start from top and go down by height
-                        width: width,
-                        height: height,
-                        borderColor: PDFLib.rgb(0, 0, 0), // Black border
-                        borderWidth: 1,
+                        const height = commentRef.current.state.height;
+                        const width = 250;
+                        
+                        const commentColors: number[] = commentRef.current.state.matchingColor.match(/\d+(\.\d+)?/g)?.map(Number) as number[]; // grab numbers from rgba string in order
+                        const commentColor = PDFLib.rgb(commentColors[0] / 255, commentColors[1] / 255, commentColors[2] / 255); 
+                        
+                        const commentIconRadius: number = 5;
+
+                        // Draw a rectangle for the comment box
+                        page.drawRectangle({
+                            x: startX + (horizontalPadding / 2), // A little padding from the left of the column
+                            y: startY - height - (verticalPadding / 2), // Start from top and go down by height
+                            width: width,
+                            height: height,
+                            borderColor: PDFLib.rgb(0, 0, 0), // Black border
+                            borderWidth: 1,
+                        });
+
+                        // Draw circle of the color of the highlight
+                        page.drawCircle({
+                            x: startX + (horizontalPadding / 2) + commentIconRadius + 8, // A little padding from the left of the column
+                            y: startY - (verticalPadding / 2) - commentIconRadius - 8, // Start from top and go down by height
+                            size: commentIconRadius*2,
+                            color: commentColor,
+                            borderColor: PDFLib.rgb(0, 0, 0),
+                            borderWidth: 1,
+                        })
+
+                        // Add annotated text
+                        page.drawText(`Annotated: [ ${commentRef.current.getTextCommented() } ]`, {
+                            x: startX + (horizontalPadding / 2) + (commentIconRadius * 2) + 8 + 10,
+                            y: startY - (verticalPadding / 2) - commentIconRadius - 8 - 3.5,
+                            size: 10,
+                            maxWidth: width - (commentIconRadius * 2) - 8 - 10,
+                            lineHeight: 10,
+                        });
+
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d') as CanvasRenderingContext2D;
+                        context.font = `${10}px Arial`;  // Use the appropriate font
+                        const underTopTextPixels = (context.measureText(`Annotated: [ ${commentRef.current.getTextCommented() } ]`).width / (width - (commentIconRadius * 2) - 8 - 10)) * 10;
+
+                        page.drawText(`Comment: "${commentRef.current.getComment() }"`, {
+                            x: startX + (horizontalPadding / 2) + (commentIconRadius * 2) + 8 + 10,
+                            y: startY - (verticalPadding / 2) - commentIconRadius - 8 - 3.5 - underTopTextPixels - 20,
+                            size: 11,
+                            maxWidth: width - (commentIconRadius * 2) - 8 - 10,
+                            lineHeight: 11,
+                        });
+
+                        startY -= height + 10; // Move down for the next comment box
                     });
 
-                    // Draw circle of the color of the highlight
-                    page.drawCircle({
-                        x: startX + (horizontalPadding / 2) + commentIconRadius + 8, // A little padding from the left of the column
-                        y: startY - (verticalPadding / 2) - commentIconRadius - 8, // Start from top and go down by height
-                        size: commentIconRadius*2,
-                        color: commentColor,
-                        borderColor: PDFLib.rgb(0, 0, 0),
-                        borderWidth: 1,
-                    })
-
-                    // Add annotated text
-                    page.drawText(`Annotated: [ ${commentRef.current.getTextCommented() } ]`, {
-                        x: startX + (horizontalPadding / 2) + (commentIconRadius * 2) + 8 + 10,
-                        y: startY - (verticalPadding / 2) - commentIconRadius - 8 - 3.5,
-                        size: 10,
-                        maxWidth: width - (commentIconRadius * 2) - 8 - 10,
-                        lineHeight: 10,
-                    });
-
-                    const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d') as CanvasRenderingContext2D;
-                    context.font = `${10}px Arial`;  // Use the appropriate font
-                    const underTopTextPixels = (context.measureText(`Annotated: [ ${commentRef.current.getTextCommented() } ]`).width / (width - (commentIconRadius * 2) - 8 - 10)) * 10;
-
-                    page.drawText(`Comment: "${commentRef.current.getComment() }"`, {
-                        x: startX + (horizontalPadding / 2) + (commentIconRadius * 2) + 8 + 10,
-                        y: startY - (verticalPadding / 2) - commentIconRadius - 8 - 3.5 - underTopTextPixels - 20,
-                        size: 11,
-                        maxWidth: width - (commentIconRadius * 2) - 8 - 10,
-                        lineHeight: 11,
-                    });
-
-                    startY -= height + 10; // Move down for the next comment box
-                });
-
-                startX += 250 + (horizontalPadding / 2);
+                    startX += 250 + (horizontalPadding / 2);
+                }
             }
 
             // Now that comments are draw, we must draw the highlights / annotations!
