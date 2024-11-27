@@ -2,18 +2,26 @@ import * as React from "react";
 import { AnnotationData } from "../../interfaces/AnnotationData";
 import "./PDFHighlights.css";
 
-interface PDFPageHighlightAnnotationProps {
+export interface PDFPageHighlightAnnotationProps {
     identifier: number | string;
     range: Range | undefined;
     highlightColor: string;
+
+    onColorChange?: (newColor: string) => void;
+    onSelection?: () => void;
     onRemove: (key: number | string) => void;
 }
 
-interface ImportedPDFPageHighlightAnnotationProps {
+export interface ImportedPDFPageHighlightAnnotationProps {
     identifier: number | string;
     highlightData: AnnotationData;
+
+    onColorChange?: (newColor: string) => void;
+    onSelection?: () => void;
     onRemove: (key: number | string) => void;
 }
+
+// export interface PDF
 
 interface PDFPageHighlightAnnotationState {
     topOffset: number;
@@ -39,6 +47,9 @@ abstract class HighlightAnnotation<P extends PDFPageHighlightAnnotationProps | I
         blueChoice: React.RefObject<HTMLButtonElement>,
     };
 
+    protected onColorChangeCallback?: (newColor: string) => void;
+    protected onSelectionCallback?: () => void;
+
     constructor(props: P) {
         super(props);
 
@@ -50,6 +61,9 @@ abstract class HighlightAnnotation<P extends PDFPageHighlightAnnotationProps | I
             redChoice: React.createRef<HTMLButtonElement>(),
             blueChoice: React.createRef<HTMLButtonElement>(),
         };
+
+        this.onColorChangeCallback = props.onColorChange;
+        this.onSelectionCallback = props.onSelection;
 
         this.state = {
             topOffset: 0,
@@ -89,6 +103,11 @@ abstract class HighlightAnnotation<P extends PDFPageHighlightAnnotationProps | I
 
             // Select the chosen button
             choiceColorButton.current?.classList.add("selected-pallete-color");
+
+            // Call the on color change event if needed
+            if (this.onColorChangeCallback) {
+                this.onColorChangeCallback(color);
+            }
         });
     }
 
@@ -102,6 +121,11 @@ abstract class HighlightAnnotation<P extends PDFPageHighlightAnnotationProps | I
         if (target.className.includes("pdf-page-hightlight-annotation-container") && target.id == this.props.identifier.toString()) {
             this.setState({ highlightIsSelected: !this.state.highlightIsSelected });
             this.highlightAnnotationContainer.current?.classList.toggle("highlight-is-selected");
+        }
+
+        // Call the on color change event if needed
+        if (this.onSelectionCallback) {
+            this.onSelectionCallback();
         }
     }
 

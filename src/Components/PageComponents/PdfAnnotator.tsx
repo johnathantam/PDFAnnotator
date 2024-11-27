@@ -5,10 +5,15 @@ import * as PDFJS from "pdfjs-dist";
 import "pdfjs-dist/build/pdf.worker.mjs";
 
 import { AnnotationData } from "../../interfaces/AnnotationData";
+import { NotationData } from "../../interfaces/NotationData";
 import { CommentData } from "../../interfaces/CommentData";
-import { ImportedPDFPageCommentAnnotation, PDFPageCommentAnnotation } from "../AnnotatorComponents/PDFComments";
+import { ImportedPDFNotationAnnotation, PDFNotationAnnotation } from "../AnnotatorComponents/PDFNotation";
 import { PDFPage } from "../AnnotatorComponents/PDFSinglePage";
 import "./PdfAnnotator.css";
+
+// class SavePDF {
+
+// }
 
 interface PDFViewerProps {
     pdfData: ArrayBuffer | undefined;
@@ -29,9 +34,15 @@ interface PDFViewerState {
     annotationColor: string;
 }
 
+// interface SavedAnnotations {
+//     annotations: AnnotationData[],
+//     notations: NotationData[],
+// }
+
 interface SavedAnnotations {
     annotations: AnnotationData[],
-    comments: CommentData[],
+    notations: NotationData[],
+    comments: CommentData[]
 }
 
 class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
@@ -356,11 +367,15 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
         }
 
         const regularPageHeight: number = pdfDoc.getPage(0).getHeight();
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d')!;
+        const commentWidth = 250;
+        context.font = `10px Arial`;
 
         // Loop through all rendered pages to check for annotations
         for (let i = 0; i < this.state.pdfPageObjects.length; i++) {
             // Check for comments
-            const pdfComments = this.state.pdfPageObjects[i].current?.state.commentSectionElementRefs;
+            const pdfComments = this.state.pdfPageObjects[i].current?.state.notationSectionElementRefs;
 
             if (pdfComments == undefined) {
                 continue;
@@ -368,15 +383,28 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
             
             // Now sort the comments into columns based on overflow (sometimes there are too many comments, so we expand horizontally!)
             const horizontalPadding: number = 10; // The actuall padding is 5 px between each! Its just divided by 2
-            const verticalPadding: number = 10;
-            const commentHeights = pdfComments.map(commentRef => commentRef.current?.state.height).filter(height => height !== undefined) as number[]; 
+            const verticalPadding: number = 10; // ADJUST COMMENT HEIGHTS FOR THE HEIGHT ALGORITHM BELOW!!!
+
+            const commentHeights = pdfComments.map(commentRef => {
+                if (commentRef.current) {
+                    return (
+                        50 +
+                        (context.measureText(
+                            commentRef.current.getComment() + commentRef.current.getTextCommented()
+                        ).width / commentWidth) * 20
+                    );
+                }
+
+                return undefined;
+            }).filter(height => height !== undefined) as number[]; 
+            
             const heightLimit: number = Math.max(commentHeights.length > 0 ? Math.max(...commentHeights) : 0, regularPageHeight) + (verticalPadding / 2);
 
             let currentHeight = 0;
             let currentColumn = 0;
-            const columns: (React.RefObject<PDFPageCommentAnnotation> | React.RefObject<ImportedPDFPageCommentAnnotation>)[][] = [[]];
+            const columns: (React.RefObject<PDFNotationAnnotation> | React.RefObject<ImportedPDFNotationAnnotation>)[][] = [[]];
 
-            pdfComments?.forEach((comment: (React.RefObject<PDFPageCommentAnnotation> | React.RefObject<ImportedPDFPageCommentAnnotation>)) => {
+            pdfComments?.forEach((comment: (React.RefObject<PDFNotationAnnotation> | React.RefObject<ImportedPDFNotationAnnotation>)) => {
                 if (comment.current == undefined) {
                     return;
                 } else if (currentHeight + comment.current.state.height <= heightLimit) { // If height of comment is less than the column height, then add it!
@@ -389,81 +417,79 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
                 }
             })
 
-            // Now that we have all the columns, LETS START adding the comments to the page!
             const page = pdfDoc.getPage(i);
 
+            // Now that we have all the columns of comments, LETS START adding the comments to the page!
             if (pdfComments.length > 0) {
-                page.setSize(page.getWidth() + columns.length * (250 + horizontalPadding), heightLimit + verticalPadding);
+                page.setSize(page.getWidth() + columns.length * (commentWidth + horizontalPadding), heightLimit + verticalPadding);
 
-                // Draw comments onto pdf
-                let startX = page.getWidth() - (columns.length * (250 + horizontalPadding));
-                for (let col = 0; col < columns.length; col++) {
+                let startX = page.getWidth() - columns.length * (commentWidth + horizontalPadding);
+                for (let comments = 0; comments < columns.length; comments++) {
                     let startY = page.getHeight(); // Start from the top of the page
-
-                    columns[col].forEach(commentRef => {
-                        if (commentRef.current == undefined) {
+                    columns[comments].forEach(commentRef => {
+                        if (!commentRef.current) {
                             return;
                         }
 
-                        const height = commentRef.current.state.height;
-                        const width = 250;
-                        
-                        const commentColors: number[] = commentRef.current.state.matchingColor.match(/\d+(\.\d+)?/g)?.map(Number) as number[]; // grab numbers from rgba string in order
-                        const commentColor = PDFLib.rgb(commentColors[0] / 255, commentColors[1] / 255, commentColors[2] / 255); 
-                        
-                        const commentIconRadius: number = 5;
+                        const { matchingColor } = commentRef.current.state;
+                        const commentColors = matchingColor.match(/\d+(\.\d+)?/g)?.map(Number) || []; // This line extracts numeric values from the matchingColor string (expected to be in a format like "rgba(255, 0, 0, 0.5)") and converts them into an array of numbers:
+                        const commentColor = PDFLib.rgb(commentColors[0] / 255, commentColors[1] / 255, commentColors[2] / 255);
+                        const commentIconRadius = 5;
+                        const commentHeight = 50 + (context.measureText(commentRef.current.getComment() + commentRef.current.getTextCommented()).width / commentWidth) * 20;
 
-                        // Draw a rectangle for the comment box
+                        // Draw rectangle for the comment box
                         page.drawRectangle({
-                            x: startX + (horizontalPadding / 2), // A little padding from the left of the column
-                            y: startY - height - (verticalPadding / 2), // Start from top and go down by height
-                            width: width,
-                            height: height,
-                            borderColor: PDFLib.rgb(0, 0, 0), // Black border
+                            x: startX + horizontalPadding / 2,
+                            y: startY - commentHeight - verticalPadding / 2,
+                            width: commentWidth,
+                            height: commentHeight,
+                            borderColor: PDFLib.rgb(0, 0, 0),
                             borderWidth: 1,
                         });
 
-                        // Draw circle of the color of the highlight
+                        // Draw colored circle icon
                         page.drawCircle({
-                            x: startX + (horizontalPadding / 2) + commentIconRadius + 8, // A little padding from the left of the column
-                            y: startY - (verticalPadding / 2) - commentIconRadius - 8, // Start from top and go down by height
-                            size: commentIconRadius*2,
+                            x: startX + horizontalPadding / 2 + commentIconRadius + 8,
+                            y: startY - verticalPadding / 2 - commentIconRadius - 8,
+                            size: commentIconRadius * 2,
                             color: commentColor,
                             borderColor: PDFLib.rgb(0, 0, 0),
                             borderWidth: 1,
-                        })
+                        });
 
-                        // Add annotated text
-                        page.drawText(`Annotated: [ ${commentRef.current.getTextCommented() } ]`, {
-                            x: startX + (horizontalPadding / 2) + (commentIconRadius * 2) + 8 + 10,
-                            y: startY - (verticalPadding / 2) - commentIconRadius - 8 - 3.5,
+                        // Draw annotated text
+                        const annotatedText = `Annotated: [ ${commentRef.current.getTextCommented()} ]`;
+                        const textX = startX + horizontalPadding / 2 + commentIconRadius * 2 + 18;
+                        const textY = startY - verticalPadding / 2 - commentIconRadius - 8 - 3.5;
+                        const textWidth = commentWidth - commentIconRadius * 2 - 18;
+
+                        page.drawText(annotatedText, {
+                            x: textX,
+                            y: textY,
                             size: 10,
-                            maxWidth: width - (commentIconRadius * 2) - 8 - 10,
+                            maxWidth: textWidth,
                             lineHeight: 10,
                         });
 
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d') as CanvasRenderingContext2D;
-                        context.font = `${10}px Arial`;  // Use the appropriate font
-                        const underTopTextPixels = (context.measureText(`Annotated: [ ${commentRef.current.getTextCommented() } ]`).width / (width - (commentIconRadius * 2) - 8 - 10)) * 10;
-
-                        page.drawText(`Comment: "${commentRef.current.getComment() }"`, {
-                            x: startX + (horizontalPadding / 2) + (commentIconRadius * 2) + 8 + 10,
-                            y: startY - (verticalPadding / 2) - commentIconRadius - 8 - 3.5 - underTopTextPixels - 20,
+                        // Draw comment text
+                        const textPixelHeight = (context.measureText(annotatedText).width / textWidth) * 10;
+                        const commentText = `Comment: "${commentRef.current.getComment()}"`;
+                        page.drawText(commentText, {
+                            x: textX,
+                            y: textY - textPixelHeight - 20,
                             size: 11,
-                            maxWidth: width - (commentIconRadius * 2) - 8 - 10,
+                            maxWidth: textWidth,
                             lineHeight: 11,
                         });
 
-                        startY -= height + 10; // Move down for the next comment box
+                        startY -= commentHeight + 10; // Move down for the next comment box
                     });
 
-                    startX += 250 + (horizontalPadding / 2);
+                    startX += commentWidth + horizontalPadding / 2;
                 }
             }
 
             // Now that comments are draw, we must draw the highlights / annotations!
-
             const pageAnnotations = this.state.pdfPageObjects[i].current?.state.annotationLayerElementRefs;
 
             if (pageAnnotations == undefined) {
@@ -499,6 +525,7 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
                     })
                 }
             }
+
         }
 
         const pdfBytes = await pdfDoc.save();
@@ -523,8 +550,9 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
         }
 
         const savedAnnotations: SavedAnnotations = {
-            comments: [],
-            annotations: []
+            annotations: [],
+            notations: [],
+            comments: []
         }
 
         for (let i = 0; i < this.state.pdfPageObjects.length; i++) {
@@ -534,16 +562,16 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
                 return;
             }
 
-            const pageComments = pageObject.state.commentSectionElementRefs;
+            const pageNotations = pageObject.state.notationSectionElementRefs;
 
-            for (let  j = 0; j < pageComments.length; j++) {
-                const comment = pageComments[j].current;
+            for (let  j = 0; j < pageNotations.length; j++) {
+                const comment = pageNotations[j].current;
 
                 if (comment == undefined) {
                     continue;
                 }
 
-                const commentData: CommentData = {
+                const commentData: NotationData = {
                     pageNumber: i,
                     identifier: comment.props.identifier,
                     textCommented: comment.getTextCommented(),
@@ -551,7 +579,7 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
                     matchingColor: comment.state.matchingColor
                 }
 
-                savedAnnotations.comments.push(commentData);
+                savedAnnotations.notations.push(commentData);
             }
 
             const pageAnnotations = pageObject.state.annotationLayerElementRefs;
@@ -580,6 +608,25 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
                 }
 
                 savedAnnotations.annotations.push(annotationData);
+            }
+
+            const pageComments = pageObject.state.comments;
+
+            for (let g = 0; g < pageComments.length; g++) {
+                const comment = pageComments[g]
+                const commentNotationID = comment.PDFCommentNotationRef.current?.props.identifier;
+                const commentAnnotationID = comment.PDFCommentHighlightRef.current?.props.identifier;
+
+                if (!commentNotationID || !commentAnnotationID) {
+                    continue;
+                }
+
+                const commentData: CommentData = {
+                    notationID: commentNotationID,
+                    annotationID: commentAnnotationID
+                }
+
+                savedAnnotations.comments.push(commentData);
             }
         }
 
@@ -638,7 +685,24 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
 
         // Now loop through config and add annotations and comments
         const annotations = data.annotations;
+        const notations = data.notations;
         const comments = data.comments;
+
+        for (let g = 0; g < comments.length; g++) {
+            const comment = comments[g];
+            const commentAnnotation: number = annotations.findIndex((annotation: AnnotationData) => annotation.identifier == comment.annotationID);
+            const commentNotation: number = notations.findIndex((notation: NotationData) => notation.identifier == comment.notationID);
+            const renderedPageNumber: number = this.state.pdfPageObjects.length-1;
+
+            if (annotations[commentAnnotation].pageNumber > renderedPageNumber) {
+                await this.renderPDFPages(renderedPageNumber+1, (annotations[commentAnnotation].pageNumber - renderedPageNumber));
+            }
+
+            await this.state.pdfPageObjects[annotations[commentAnnotation].pageNumber].current?.importCommentFromData(notations[commentNotation], annotations[commentAnnotation]);
+        
+            // Remove the annotation as it is apart of the comment
+            annotations.splice(commentAnnotation, 1);
+        }
 
         for (let i = 0; i < annotations.length; i++) {
             const annotation = annotations[i] as AnnotationData;
@@ -651,16 +715,16 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
             await this.state.pdfPageObjects[annotation.pageNumber].current?.importHighlightedTextAnnotationFromData(annotation);
         }
 
-        for (let j = 0; j < comments.length; j++) {
-            const comment = comments[j] as CommentData;
-            const renderedPageNumber: number = this.state.pdfPageObjects.length-1;
+        // for (let j = 0; j < notations.length; j++) {
+        //     const notation = notations[j] as NotationData;
+        //     const renderedPageNumber: number = this.state.pdfPageObjects.length-1;
 
-            if (comment.pageNumber > renderedPageNumber) {
-                await this.renderPDFPages(renderedPageNumber+1, (comment.pageNumber - renderedPageNumber));
-            }
+        //     if (notation.pageNumber > renderedPageNumber) {
+        //         await this.renderPDFPages(renderedPageNumber+1, (notation.pageNumber - renderedPageNumber));
+        //     }
 
-            await this.state.pdfPageObjects[comment.pageNumber].current?.importCommentFromData(comment);
-        }
+        //     await this.state.pdfPageObjects[notation.pageNumber].current?.importCommentFromData(notation);
+        // }
     }
 
     public componentDidMount(): void {

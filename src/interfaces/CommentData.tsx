@@ -1,7 +1,6 @@
 export interface CommentData {
-    pageNumber: number;
-    identifier: string | number;
-    textCommented: string;
-    comment: string;
-    matchingColor: string;
+    notationID: string | number,
+    annotationID: string | number
 }
+
+// Work on saving and loading with new comments

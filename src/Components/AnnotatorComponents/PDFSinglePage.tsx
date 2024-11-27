@@ -3,11 +3,12 @@ import * as PDFJS from "pdfjs-dist";
 import { TextContent, TextItem } from "pdfjs-dist/types/src/display/api";
 
 import { AnnotationData } from "../../interfaces/AnnotationData";
-import { CommentData } from "../../interfaces/CommentData";
-import { PDFPageCommentAnnotation, ImportedPDFPageCommentAnnotation } from "../AnnotatorComponents/PDFComments";
-import { PDFPageHighlightAnnotation, ImportedPDFPageHighlightAnnotation } from "../AnnotatorComponents/PDFHighlights";
+import { NotationData } from "../../interfaces/NotationData";
+import { PDFNotationAnnotation, ImportedPDFNotationAnnotation, PDFNotationAnnotationProps, ImportedPDFNotationAnnotationProps } from "./PDFNotation";
+import { PDFPageHighlightAnnotation, ImportedPDFPageHighlightAnnotation, PDFPageHighlightAnnotationProps, ImportedPDFPageHighlightAnnotationProps } from "../AnnotatorComponents/PDFHighlights";
 
 import "./PDFSinglePage.css";
+import { ImportedPDFPageComment, PDFPageComment } from "./PDFComment";
 
 
 interface PDFPageProps {
@@ -28,8 +29,10 @@ interface PDFPageState {
 
     annotationLayerElements: JSX.Element[];
     annotationLayerElementRefs: (React.RefObject<PDFPageHighlightAnnotation> | React.RefObject<ImportedPDFPageHighlightAnnotation>)[];
-    commentSectionElements: JSX.Element[];
-    commentSectionElementRefs: (React.RefObject<PDFPageCommentAnnotation> | React.RefObject<ImportedPDFPageCommentAnnotation>)[];
+    notationSectionElements: JSX.Element[];
+    notationSectionElementRefs: (React.RefObject<PDFNotationAnnotation> | React.RefObject<ImportedPDFNotationAnnotation>)[];
+
+    comments: (PDFPageComment | ImportedPDFPageComment)[],
 
     isHighlighting: boolean;
     isCommenting: boolean;
@@ -73,8 +76,10 @@ class PDFPage extends React.Component<PDFPageProps, PDFPageState> {
 
             annotationLayerElements: [],
             annotationLayerElementRefs: [],
-            commentSectionElements: [],
-            commentSectionElementRefs: [],
+            notationSectionElements: [],
+            notationSectionElementRefs: [],
+            
+            comments: [],
 
             isHighlighting: props.highlightModeIsEnabled,
             isCommenting: props.commentModeIsEnabled,
@@ -221,23 +226,28 @@ class PDFPage extends React.Component<PDFPageProps, PDFPageState> {
             (_ref, index) => this.state.annotationLayerElements[index]?.props.identifier !== identifier
         );
 
-        const newCommentAnnotations = this.state.commentSectionElements.filter(
+        const newNotationAnnotations = this.state.notationSectionElements.filter(
             (annotation: JSX.Element) => annotation?.props.identifier !== identifier
         );
 
-        const newCommentAnnotationRefs = this.state.commentSectionElementRefs.filter(
+        const newNotationAnnotationRefs = this.state.notationSectionElementRefs.filter(
             (_ref, index) => this.state.annotationLayerElements[index]?.props.identifier !== identifier
         );
+
+        const newComments = this.state.comments.filter(
+            (comment: (PDFPageComment | ImportedPDFPageComment)) => comment.identifier !== identifier
+        )
 
         this.setState({ 
             annotationLayerElements: newHighlightAnnotations, 
             annotationLayerElementRefs: newAnnotationRefs,
-            commentSectionElements: newCommentAnnotations,
-            commentSectionElementRefs: newCommentAnnotationRefs
-        });
+            notationSectionElements: newNotationAnnotations,
+            notationSectionElementRefs: newNotationAnnotationRefs,
+            comments: newComments
+        }, () => console.log(this.state));
     }
 
-    private commentSelectedText(): void {
+    private commentSelectedText(): void { // WORK HERE
         const selection: Selection | null = window.getSelection();
 
         if (!selection) {
@@ -250,23 +260,53 @@ class PDFPage extends React.Component<PDFPageProps, PDFPageState> {
             return;
         }
 
+        // OVER HERE - CREATE A COMMENT INSTEAD AND THEN PUT ITS COMPONENTS INTO THE STATE!
+        // OKAY NOW THAT THE COMMENT OBJECT IS CREATED AND WORKS FINE -> THE HIGHLIGHT AND notation are linked!
+        // Just finish the code to link the two colors and stuff like that!
+
         const range: Range = selection.getRangeAt(0);
         const identifier: number = Math.random();
 
-        // Create new highlighted annotation with the given range of the comment, making sure to store its ref
-        const newHighlightAnnotationRef: React.RefObject<PDFPageHighlightAnnotation> =  React.createRef<PDFPageHighlightAnnotation>();
-        const newHighlightAnnotation: JSX.Element = (<PDFPageHighlightAnnotation highlightColor={this.state.annotationColor} range={range} onRemove={this.removeCommentAnnotation.bind(this)} identifier={identifier} ref={newHighlightAnnotationRef} key={Math.random()}></PDFPageHighlightAnnotation>)
+        // // Create new highlighted annotation with the given range of the comment, making sure to store its ref
+        // const newHighlightAnnotationRef: React.RefObject<PDFPageHighlightAnnotation> =  React.createRef<PDFPageHighlightAnnotation>();
+        // const newHighlightAnnotation: JSX.Element = (<PDFPageHighlightAnnotation highlightColor={this.state.annotationColor} range={range} onRemove={this.removeCommentAnnotation.bind(this)} identifier={identifier} ref={newHighlightAnnotationRef} key={Math.random()}></PDFPageHighlightAnnotation>)
         
-        // Create new comment
-        const newCommentAnnotationRef: React.RefObject<PDFPageCommentAnnotation> = React.createRef<PDFPageCommentAnnotation>();
-        const newCommentAnnotation: JSX.Element = (<PDFPageCommentAnnotation matchingColor={this.state.annotationColor} identifier={identifier} textCommented={textSelected} onRemove={this.removeCommentAnnotation.bind(this)} ref={newCommentAnnotationRef} key={Math.random()}></PDFPageCommentAnnotation>);
+        // // Create new comment
+        // const newCommentAnnotationRef: React.RefObject<PDFNotationAnnotation> = React.createRef<PDFNotationAnnotation>();
+        // const newCommentAnnotation: JSX.Element = (<PDFNotationAnnotation matchingColor={this.state.annotationColor} identifier={identifier} textCommented={textSelected} onRemove={this.removeCommentAnnotation.bind(this)} ref={newCommentAnnotationRef} key={Math.random()}></PDFNotationAnnotation>);
 
-        this.setState({ 
-            annotationLayerElements: [...this.state.annotationLayerElements, newHighlightAnnotation], 
-            annotationLayerElementRefs: [...this.state.annotationLayerElementRefs, newHighlightAnnotationRef],
-            commentSectionElements: [...this.state.commentSectionElements, newCommentAnnotation],
-            commentSectionElementRefs: [...this.state.commentSectionElementRefs, newCommentAnnotationRef]
-        });
+        // this.setState({ 
+        //     annotationLayerElements: [...this.state.annotationLayerElements, newHighlightAnnotation], 
+        //     annotationLayerElementRefs: [...this.state.annotationLayerElementRefs, newHighlightAnnotationRef],
+        //     commentSectionElements: [...this.state.commentSectionElements, newCommentAnnotation],
+        //     commentSectionElementRefs: [...this.state.commentSectionElementRefs, newCommentAnnotationRef]
+        // });
+
+        // Create new comment consisting of a highlight and notation
+        const highlightProps: PDFPageHighlightAnnotationProps = {
+            highlightColor: this.state.annotationColor,
+            range: range,
+            onRemove: this.removeCommentAnnotation.bind(this),
+            identifier: identifier
+        }
+
+        const notationProps: PDFNotationAnnotationProps= {
+            identifier: identifier,
+            matchingColor: this.state.annotationColor,
+            textCommented: textSelected,
+            onRemove: this.removeCommentAnnotation.bind(this)
+        }
+
+        const newComment = new PDFPageComment({PDFHighlightProps: highlightProps, PDFNotationProps: notationProps, identifier: identifier})
+
+        // Add the notation and highlight of the comment:
+        this.setState({
+            annotationLayerElements: [...this.state.annotationLayerElements, newComment.PDFCommentHighlightElement], 
+            annotationLayerElementRefs: [...this.state.annotationLayerElementRefs, newComment.PDFCommentHighlightRef],
+            notationSectionElements: [...this.state.notationSectionElements, newComment.PDFCommentNotationElement],
+            notationSectionElementRefs: [...this.state.notationSectionElementRefs, newComment.PDFCommentNotationRef],
+            comments: [...this.state.comments, newComment]
+        })
     }
 
     private configureModesOnStartup(): void {
@@ -318,16 +358,30 @@ class PDFPage extends React.Component<PDFPageProps, PDFPageState> {
         })
     }
 
-    public async importCommentFromData(commentData: CommentData): Promise<void> {
-        // Create new comment
-        const newImportedCommentAnnotationRef: React.RefObject<ImportedPDFPageCommentAnnotation> = React.createRef<ImportedPDFPageCommentAnnotation>();
-        const newImportedCommentAnnotation: JSX.Element = (<ImportedPDFPageCommentAnnotation commentData={commentData} onRemove={this.removeCommentAnnotation.bind(this)} identifier={commentData.identifier} ref={newImportedCommentAnnotationRef} key={Math.random()}></ImportedPDFPageCommentAnnotation>);
+    public async importCommentFromData(notationData: NotationData, annotationData: AnnotationData): Promise<void> {
+        // Create new comment consisting of a highlight and notation
+        const highlightProps: ImportedPDFPageHighlightAnnotationProps = {
+            identifier: annotationData.identifier,
+            highlightData: annotationData,
+            onRemove: this.removeCommentAnnotation.bind(this)
+        }
 
+        const notationProps: ImportedPDFNotationAnnotationProps = {
+            identifier: notationData.identifier,
+            commentData: notationData,
+            onRemove: this.removeCommentAnnotation.bind(this)
+        }
+
+        const newComment = new ImportedPDFPageComment({PDFHighlightProps: highlightProps, PDFNotationProps: notationProps, identifier: annotationData.identifier})
+        
         return new Promise<void> ((resolve) => {
-            this.setState({ 
-                commentSectionElements: [...this.state.commentSectionElements, newImportedCommentAnnotation],
-                commentSectionElementRefs: [...this.state.commentSectionElementRefs, newImportedCommentAnnotationRef]
-            }, () => resolve());
+            this.setState({
+                annotationLayerElements: [...this.state.annotationLayerElements, newComment.PDFCommentHighlightElement], 
+                annotationLayerElementRefs: [...this.state.annotationLayerElementRefs, newComment.PDFCommentHighlightRef],
+                notationSectionElements: [...this.state.notationSectionElements, newComment.PDFCommentNotationElement],
+                notationSectionElementRefs: [...this.state.notationSectionElementRefs, newComment.PDFCommentNotationRef],
+                comments: [...this.state.comments, newComment]
+            }, () => resolve())
         })
     }
 
@@ -369,7 +423,7 @@ class PDFPage extends React.Component<PDFPageProps, PDFPageState> {
                         </div>
                     </div>
                     <div className="pdf-page-comments-container" ref={this.pdfCommentSection}>
-                        {this.state.commentSectionElements}
+                        {this.state.notationSectionElements}
                     </div>
                 </div>
             </>
