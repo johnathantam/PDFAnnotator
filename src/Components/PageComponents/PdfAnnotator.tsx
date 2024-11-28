@@ -383,7 +383,7 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
             
             // Now sort the comments into columns based on overflow (sometimes there are too many comments, so we expand horizontally!)
             const horizontalPadding: number = 10; // The actuall padding is 5 px between each! Its just divided by 2
-            const verticalPadding: number = 10; // ADJUST COMMENT HEIGHTS FOR THE HEIGHT ALGORITHM BELOW!!!
+            const verticalPadding: number = 10;
 
             const commentHeights = pdfComments.map(commentRef => {
                 if (commentRef.current) {
@@ -498,7 +498,7 @@ class PDFViewer extends React.Component<PDFViewerProps, PDFViewerState> {
 
             for (let j = 0; j < pageAnnotations.length; j++) {
                 const annotationObject =  pageAnnotations[j].current;
-                const annotation = annotationObject?.getResizeRatio(1);
+                const annotation = annotationObject?.getResizeRatio(1 / this.state.zoomScale);
 
                 if (annotationObject == undefined || annotation == undefined) {
                     continue;
